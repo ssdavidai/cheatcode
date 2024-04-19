@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="style.css"/>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        $(function() {
+            var conversation_state = 0;
+            var threadID = '';
+
+            var terminal = $('body').terminal(function(command) {
+                if (command !== '') {
+                    this.pause();
+                    let webhookURL = conversation_state === 0 ? 'https://hook.us1.make.com/12rrp40s9w8ojgwvg6xqhlsw4il7ojsn' : 'https://hook.us1.make.com/s8srpg51hv9kqo7b57k6sbvr0437f8i4';
+                    let dataToSend = { command: command };
+                    if (conversation_state === 1) {
+                        dataToSend.thread_ID = threadID;
+                    }
+
+                    $.ajax({
+                        url: webhookURL,
+                        type: 'POST',
+                        contentType: 'application/json',
+                        dataType: 'text',
+                        data: JSON.stringify(dataToSend),
+                        success: function(response) {
+                            typeResponse(response);
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            terminal.error('Error: Could not reach the server.');
+                            terminal.resume();
+                        }
+                    });
+                } else {
+                    this.echo('Please enter a command.');
+                }
+            }, {
+                greetings: 'type start to begin your journey',
+                prompt: '> '
+            });
+
+          function typeResponse(responseText) {
+              try {
+                  var jsonResponse = JSON.parse(responseText);
+                  responseText = jsonResponse.response || responseText;
+              } catch (e) {
+                  // Not JSON, use as is
+              }
+
+              responseText = responseText.trim(); // Ensure no leading/trailing whitespace
+              var i = 0;
+
+              terminal.echo(); // Move to a new line for the typing animation
+              var typedLineIndex = terminal.last_index(); // Index of the line where we will type the response
+
+              (function typeChar() {
+                  if (i < responseText.length) {
+                      terminal.update(typedLineIndex, responseText.substring(0, i + 1));
+                      i++;
+                      setTimeout(typeChar, 17); // Adjust typing speed as needed
+                  } else {
+                      terminal.resume(); // Resume terminal for new input
+                  }
+              })();
+          }
+        });
+    </script>
+</body>
+</html>
