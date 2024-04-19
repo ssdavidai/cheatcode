@@ -74,6 +74,8 @@
                       setTimeout(typeChar, 17); // Adjust typing speed as needed
                   } else {
                       terminal.resume(); // Resume terminal for new input
+                      conversation_state = 1; // Set conversation_state to 1 after resuming
+
                   }
               })();
           }
