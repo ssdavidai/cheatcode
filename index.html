@@ -39,12 +39,20 @@
                         data: JSON.stringify(dataToSend),
                         success: function(response) {
                             typeResponse(response);
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            terminal.error('Error: Could not reach the server.');
-                            terminal.resume();
-                        }
-                    });
+                        try {
+            var jsonResponse = JSON.parse(response);
+            if (jsonResponse.thread_ID) {
+                threadID = jsonResponse.thread_ID;  // Save the thread_ID from the response
+            }
+        } catch (e) {
+            console.log('Error parsing response: ' + e.message);
+        }
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+        terminal.error('Error: Could not reach the server.');
+        terminal.resume();
+    }
+});
                 } else {
                     this.echo('Please enter a command.');
                 }
